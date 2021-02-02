@@ -19,7 +19,7 @@ var _mongoose = require('mongoose');
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 var app = (0, _express2.default)();
-var PORT = 4000;
+var PORT = 3000;
 
 /* const functions = require('firebase-functions');
 const admin = require('firebase-admin');

@@ -4,7 +4,7 @@ import routes from './routes/routes';
 import expressJwt from 'express-jwt';
 
 const app = express();
-const PORT = 4000;
+const PORT = 3000;
 
 /* const functions = require('firebase-functions');
 const admin = require('firebase-admin');
