@@ -107,6 +107,7 @@ export const login = (req, res) => {
 export const register = (req, res) => {
     console.log('register', req.body)
     // add user to DB
+    delete req.body._id;
     const newUser = new User(req.body);
     newUser.save((err, user) => {
         if (err) {
