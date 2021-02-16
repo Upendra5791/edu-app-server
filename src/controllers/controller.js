@@ -1,6 +1,7 @@
 import { User } from '../models/usersModel';
 import { Subject } from '../models/subjectModel';
 import jwt from 'jsonwebtoken';
+import { Activity } from '../models/activityModel';
 
 export const addUser = (req, res) => {
     console.log('Add User')
@@ -119,3 +120,90 @@ export const register = (req, res) => {
         }
     });
 }
+
+export const addActivity = (req, res) => {
+    console.log('Add New Activity');
+    const newActivity = new Activity(req.body)
+    newActivity.save((err, activity) => {
+        if (err) {
+            res.send(err);
+        } else {
+            res.json(activity);
+        }
+    })
+}
+
+export const getActivityByParams = (req, res) => {
+    console.log('Get Activity');
+    if (!req.body.grade || !req.body.subject) {
+        res.send('Incorrect Parameters');
+        return;
+    } 
+    Activity.find({"grade": req.body.grade, "subject": req.body.subject}, (activities, err) => {
+        if (err) {
+            res.send(err)
+        } else {
+            res.json(activities)
+        }
+    })
+}
+
+/***************File Upload**********************/
+
+/* Firebase Setup */
+const uuid = require('uuid-v4');
+const firebase = require("firebase-admin");
+const serviceAccount = require("../../cert/firebase-service-account-cert.json");
+const firebaseConfig = {
+    credential: firebase.credential.cert(serviceAccount),
+    storageBucket: 'gs://edu-app-42506.appspot.com'
+  };
+  firebase.initializeApp(firebaseConfig);
+  
+  // Get a reference to the storage service, which is used to create references in your storage bucket
+//   var storage = require('@google-cloud/storage');
+//   var storageRef = storage.ref();
+  const bucket = firebase.storage().bucket();
+
+const multer = require('multer')
+const upload = multer({ dest: 'uploads/' }).single('file');
+export const fileUpload = async(req, res, next) => {
+    var path = '';
+/*         const file = await bucket.file('c39163918a7ecea92d3f473c56701405');
+        console.log(file); */
+//res.download(file)
+     upload(req, res, function (err) {
+        if (err) {
+            // An error occurred when uploading
+            console.log(err);
+            return res.status(422).send("an Error occured")
+        }
+        const metadata = {
+            metadata: {
+              firebaseStorageDownloadTokens: uuid()
+            },
+            contentType: req.file.mimetype,
+            cacheControl: 'public, max-age=31536000',
+          };
+          bucket.upload(req.file.path, {
+            // Support for HTTP requests made with `Accept-Encoding: gzip`
+            gzip: true,
+            metadata: metadata,
+          }).then(fileRes => {
+            const fileData = fileRes[1];
+            res.json({
+                message: 'File is uploaded Successfully!',
+                fileLink: fileData.mediaLink,
+                fileName: fileData.name,
+            });
+          }).catch(err => {
+            res.send(err)
+          })
+       
+    });
+}
+
+/* export const downloadFile = (req, res) => {
+    const file = bucket.file('bf94043931d71374eaa2772dcec54799');
+    console.log(file);
+} */

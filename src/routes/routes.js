@@ -1,6 +1,12 @@
-import { getAllUsers, addUser, login, register,
-         getAllSubjects, getSubject, addNewSubject,
-         addChapterInSubject, getUser } from '../controllers/controller';
+import {
+    getAllUsers, addUser, login, register,
+    getAllSubjects, getSubject, addNewSubject,
+    addChapterInSubject, getUser, fileUpload, addActivity, getActivityByParams
+} from '../controllers/controller';
+
+
+const multer = require('multer')
+const upload = multer({ dest: 'uploads/' }).single('file');
 
 const routes = (app) => {
     app.route('/subjects')
@@ -28,6 +34,15 @@ const routes = (app) => {
 
     app.route('/user/:userID')
         .get(getUser)
+
+    app.route('/upload')
+        .post(fileUpload)
+
+    app.route('/activity')
+        .post(addActivity)
+
+    app.route('/getActivityByParams')
+    .post(getActivityByParams)
 
     app.route('/test')
         .get((req, res) => {
