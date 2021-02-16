@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
-exports.fileUpload = exports.getActivityByParams = exports.addActivity = exports.register = exports.login = exports.addChapterInSubject = exports.getSubject = exports.addNewSubject = exports.getAllSubjects = exports.getUser = exports.getAllUsers = exports.addUser = undefined;
+exports.getActivityByParams = exports.addActivity = exports.register = exports.login = exports.addChapterInSubject = exports.getSubject = exports.addNewSubject = exports.getAllSubjects = exports.getUser = exports.getAllUsers = exports.addUser = undefined;
 
 var _usersModel = require('../models/usersModel');
 
@@ -16,8 +16,6 @@ var _jsonwebtoken2 = _interopRequireDefault(_jsonwebtoken);
 var _activityModel = require('../models/activityModel');
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
 
 var addUser = exports.addUser = function addUser(req, res) {
     console.log('Add User');
@@ -181,62 +179,44 @@ firebase.initializeApp(firebaseConfig);
 //   var storageRef = storage.ref();
 var bucket = firebase.storage().bucket();
 
-var multer = require('multer');
-var upload = multer({ dest: 'uploads/' }).single('file');
-var fileUpload = exports.fileUpload = function () {
-    var _ref = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee(req, res, next) {
-        var path;
-        return regeneratorRuntime.wrap(function _callee$(_context) {
-            while (1) {
-                switch (_context.prev = _context.next) {
-                    case 0:
-                        path = '';
-                        /*         const file = await bucket.file('c39163918a7ecea92d3f473c56701405');
-                                console.log(file); */
-                        //res.download(file)
-
-                        upload(req, res, function (err) {
-                            if (err) {
-                                // An error occurred when uploading
-                                console.log(err);
-                                return res.status(422).send("an Error occured");
-                            }
-                            var metadata = {
-                                metadata: {
-                                    firebaseStorageDownloadTokens: uuid()
-                                },
-                                contentType: req.file.mimetype,
-                                cacheControl: 'public, max-age=31536000'
-                            };
-                            bucket.upload(req.file.path, {
-                                // Support for HTTP requests made with `Accept-Encoding: gzip`
-                                gzip: true,
-                                metadata: metadata
-                            }).then(function (fileRes) {
-                                var fileData = fileRes[1];
-                                res.json({
-                                    message: 'File is uploaded Successfully!',
-                                    fileLink: fileData.mediaLink,
-                                    fileName: fileData.name
-                                });
-                            }).catch(function (err) {
-                                res.send(err);
-                            });
-                        });
-
-                    case 2:
-                    case 'end':
-                        return _context.stop();
-                }
-            }
-        }, _callee, undefined);
-    }));
-
-    return function fileUpload(_x, _x2, _x3) {
-        return _ref.apply(this, arguments);
-    };
-}();
-
+/* const multer = require('multer')
+const upload = multer({ dest: 'uploads/' }).single('file');
+export const fileUpload = async(req, res, next) => {
+    var path = '';
+/*         const file = await bucket.file('c39163918a7ecea92d3f473c56701405');
+        console.log(file); * /
+//res.download(file)
+     upload(req, res, function (err) {
+        if (err) {
+            // An error occurred when uploading
+            console.log(err);
+            return res.status(422).send("an Error occured")
+        }
+        const metadata = {
+            metadata: {
+              firebaseStorageDownloadTokens: uuid()
+            },
+            contentType: req.file.mimetype,
+            cacheControl: 'public, max-age=31536000',
+          };
+          bucket.upload(req.file.path, {
+            // Support for HTTP requests made with `Accept-Encoding: gzip`
+            gzip: true,
+            metadata: metadata,
+          }).then(fileRes => {
+            const fileData = fileRes[1];
+            res.json({
+                message: 'File is uploaded Successfully!',
+                fileLink: fileData.mediaLink,
+                fileName: fileData.name,
+            });
+          }).catch(err => {
+            res.send(err)
+          })
+       
+    });
+}
+ */
 /* export const downloadFile = (req, res) => {
     const file = bucket.file('bf94043931d71374eaa2772dcec54799');
     console.log(file);

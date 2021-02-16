@@ -6,8 +6,8 @@ Object.defineProperty(exports, "__esModule", {
 
 var _controller = require('../controllers/controller');
 
-var multer = require('multer');
-var upload = multer({ dest: 'uploads/' }).single('file');
+/* const multer = require('multer')
+const upload = multer({ dest: 'uploads/' }).single('file'); */
 
 var routes = function routes(app) {
     app.route('/subjects').get(_controller.getAllSubjects).post(_controller.addNewSubject);
@@ -26,7 +26,8 @@ var routes = function routes(app) {
 
     app.route('/user/:userID').get(_controller.getUser);
 
-    app.route('/upload').post(_controller.fileUpload);
+    /*     app.route('/upload')
+            .post(fileUpload) */
 
     app.route('/activity').post(_controller.addActivity);
 

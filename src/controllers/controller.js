@@ -165,12 +165,12 @@ const firebaseConfig = {
 //   var storageRef = storage.ref();
   const bucket = firebase.storage().bucket();
 
-const multer = require('multer')
+/* const multer = require('multer')
 const upload = multer({ dest: 'uploads/' }).single('file');
 export const fileUpload = async(req, res, next) => {
     var path = '';
 /*         const file = await bucket.file('c39163918a7ecea92d3f473c56701405');
-        console.log(file); */
+        console.log(file); * /
 //res.download(file)
      upload(req, res, function (err) {
         if (err) {
@@ -202,7 +202,7 @@ export const fileUpload = async(req, res, next) => {
        
     });
 }
-
+ */
 /* export const downloadFile = (req, res) => {
     const file = bucket.file('bf94043931d71374eaa2772dcec54799');
     console.log(file);
