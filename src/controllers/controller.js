@@ -148,7 +148,7 @@ export const getActivityByParams = (req, res) => {
     })
 }
 
-export const addSubscription = async (req, res) => {
+export const addSubscription = (req, res) => {
     console.log('Add Subscription');
     const reqObj = req.body;
     console.log(reqObj);
