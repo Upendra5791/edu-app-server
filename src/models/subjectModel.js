@@ -30,7 +30,10 @@ const subjectSchema = new Schema({
         required: 'Enter Teacher Name'
     },
     chapters: [chapterSchema],
-    subscribers: [String]
+    subscribers: [{    
+        grade: String,
+        subscriber: String
+    }]
 })
 
 export const Subject = mongoose.model('Subject', subjectSchema);

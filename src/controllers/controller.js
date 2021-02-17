@@ -148,13 +148,30 @@ export const getActivityByParams = (req, res) => {
     })
 }
 
-export const addSubscription = (req, res) => {
+export const addSubscription = async(req, res) => {
     console.log('Add Subscription');
-    const subject = req.body;
-    console.log(subject);
-    res.json({
-        message: 'added'
-    })
+    const reqObj = req.body;
+    console.log(reqObj);
+    const currentUser = await User.findById(reqObj.user._id);
+    if (currentUser) {
+        if (currentUser.subscription.includes(reqObj.subject._id)) {
+            return res.json({
+                message: 'Subject already subscribed by User!'
+            })
+        }
+        currentUser.subscription.push(reqObj.subject._id);
+        const updatedUser = await currentUser.save();
+        const currentSubject = await Subject.findById(reqObj.subject._id);
+        if (currentSubject) {
+            const subsObj = {
+                grade: updatedUser.grade,
+                subscriber: updatedUser._id
+            }
+            currentSubject.subscribers.push(subsObj);
+            const updatedSubject = await currentSubject.save();
+            res.json({user: updatedUser, subject: updatedSubject});
+        }
+    }
 }
 
 /***************File Upload**********************/

@@ -42,7 +42,10 @@ var subjectSchema = new Schema({
         required: 'Enter Teacher Name'
     },
     chapters: [chapterSchema],
-    subscribers: [String]
+    subscribers: [{
+        grade: String,
+        subscriber: String
+    }]
 });
 
 var Subject = exports.Subject = _mongoose2.default.model('Subject', subjectSchema);

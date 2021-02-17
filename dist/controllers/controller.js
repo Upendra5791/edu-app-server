@@ -17,6 +17,8 @@ var _activityModel = require('../models/activityModel');
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
+
 var addUser = exports.addUser = function addUser(req, res) {
     console.log('Add User');
     var newUser = new _usersModel.User(req.body);
@@ -162,14 +164,81 @@ var getActivityByParams = exports.getActivityByParams = function getActivityByPa
     });
 };
 
-var addSubscription = exports.addSubscription = function addSubscription(req, res) {
-    console.log('Add Subscription');
-    var subject = req.body;
-    console.log(subject);
-    res.json({
-        message: 'added'
-    });
-};
+var addSubscription = exports.addSubscription = function () {
+    var _ref = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee(req, res) {
+        var reqObj, currentUser, updatedUser, currentSubject, subsObj, updatedSubject;
+        return regeneratorRuntime.wrap(function _callee$(_context) {
+            while (1) {
+                switch (_context.prev = _context.next) {
+                    case 0:
+                        console.log('Add Subscription');
+                        reqObj = req.body;
+
+                        console.log(reqObj);
+                        _context.next = 5;
+                        return _usersModel.User.findById(reqObj.user._id);
+
+                    case 5:
+                        currentUser = _context.sent;
+
+                        if (!currentUser) {
+                            _context.next = 23;
+                            break;
+                        }
+
+                        if (!currentUser.subscription.includes(reqObj.subject._id)) {
+                            _context.next = 9;
+                            break;
+                        }
+
+                        return _context.abrupt('return', res.json({
+                            message: 'Subject already subscribed by User!'
+                        }));
+
+                    case 9:
+                        currentUser.subscription.push(reqObj.subject._id);
+                        _context.next = 12;
+                        return currentUser.save();
+
+                    case 12:
+                        updatedUser = _context.sent;
+                        _context.next = 15;
+                        return _subjectModel.Subject.findById(reqObj.subject._id);
+
+                    case 15:
+                        currentSubject = _context.sent;
+
+                        if (!currentSubject) {
+                            _context.next = 23;
+                            break;
+                        }
+
+                        subsObj = {
+                            grade: updatedUser.grade,
+                            subscriber: updatedUser._id
+                        };
+
+                        currentSubject.subscribers.push(subsObj);
+                        _context.next = 21;
+                        return currentSubject.save();
+
+                    case 21:
+                        updatedSubject = _context.sent;
+
+                        res.json({ user: updatedUser, subject: updatedSubject });
+
+                    case 23:
+                    case 'end':
+                        return _context.stop();
+                }
+            }
+        }, _callee, undefined);
+    }));
+
+    return function addSubscription(_x, _x2) {
+        return _ref.apply(this, arguments);
+    };
+}();
 
 /***************File Upload**********************/
 
