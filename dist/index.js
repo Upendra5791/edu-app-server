@@ -18,6 +18,9 @@ var _mongoose = require('mongoose');
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+require("babel-core/register");
+require("babel-polyfill");
+
 var app = (0, _express2.default)();
 var PORT = process.env.PORT || 3000;
 
