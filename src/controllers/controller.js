@@ -202,6 +202,21 @@ export const addSubscription = (req, res) => {
     } */
 }
 
+export const getStudentList = (req, res) => {
+    console.log('Get Student List');
+    const reqObj = req.body;
+        User.find({'grade': reqObj.grade})
+            .then(g_userList => {
+                return g_userList.filter(r => r.subscription.includes(reqObj.subjectID))
+            })
+            .then(userList => {
+                res.json(userList)
+            })
+            .catch(err => {
+                res.status(500).json({ error : err });
+            })
+}
+
 /***************File Upload**********************/
 
 /* Firebase Setup */

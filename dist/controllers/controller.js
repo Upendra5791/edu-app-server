@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
-exports.addSubscription = exports.getActivityByParams = exports.addActivity = exports.register = exports.login = exports.addChapterInSubject = exports.getSubject = exports.addNewSubject = exports.getAllSubjects = exports.getUser = exports.getAllUsers = exports.addUser = undefined;
+exports.getStudentList = exports.addSubscription = exports.getActivityByParams = exports.addActivity = exports.register = exports.login = exports.addChapterInSubject = exports.getSubject = exports.addNewSubject = exports.getAllSubjects = exports.getUser = exports.getAllUsers = exports.addUser = undefined;
 
 var _usersModel = require('../models/usersModel');
 
@@ -210,6 +210,20 @@ var addSubscription = exports.addSubscription = function addSubscription(req, re
             res.json({user: updatedUser, subject: updatedSubject});
         }
     } */
+};
+
+var getStudentList = exports.getStudentList = function getStudentList(req, res) {
+    console.log('Get Student List');
+    var reqObj = req.body;
+    _usersModel.User.find({ 'grade': reqObj.grade }).then(function (g_userList) {
+        return g_userList.filter(function (r) {
+            return r.subscription.includes(reqObj.subjectID);
+        });
+    }).then(function (userList) {
+        res.json(userList);
+    }).catch(function (err) {
+        res.status(500).json({ error: err });
+    });
 };
 
 /***************File Upload**********************/

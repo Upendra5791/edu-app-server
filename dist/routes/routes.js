@@ -20,8 +20,6 @@ var routes = function routes(app) {
     app.route('/addSubscription').post(_controller.addSubscription);
 
     /***** USER ROUTES *****/
-    app.route('getUser').get(_controller.getAllUsers);
-
     app.route('/login').post(_controller.login);
 
     app.route('/register').post(_controller.register);
@@ -30,8 +28,7 @@ var routes = function routes(app) {
 
     app.route('/user/:userID').get(_controller.getUser);
 
-    /*     app.route('/upload')
-            .post(fileUpload) */
+    app.route('/getStudentList').post(_controller.getStudentList);
 
     /***** ACTIVITY ROUTES *****/
     app.route('/activity').post(_controller.addActivity);

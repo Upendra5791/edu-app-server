@@ -2,7 +2,7 @@ import {
     getAllUsers, addUser, login, register,
     getAllSubjects, getSubject, addNewSubject,
     addChapterInSubject, getUser, addActivity, getActivityByParams,
-    addSubscription
+    addSubscription, getStudentList
 } from '../controllers/controller';
 
 
@@ -25,9 +25,6 @@ const routes = (app) => {
     .post(addSubscription)
 
     /***** USER ROUTES *****/
-    app.route('getUser')
-        .get(getAllUsers)
-
     app.route('/login')
         .post(login)
 
@@ -41,8 +38,8 @@ const routes = (app) => {
     app.route('/user/:userID')
         .get(getUser)
 
-/*     app.route('/upload')
-        .post(fileUpload) */
+    app.route('/getStudentList')
+        .post(getStudentList)
 
     /***** ACTIVITY ROUTES *****/
     app.route('/activity')
