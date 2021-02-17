@@ -2,8 +2,6 @@ import express from 'express';
 import { urlencoded, json } from 'body-parser';
 import routes from './routes/routes';
 import expressJwt from 'express-jwt';
-require("babel-core/register");
-require("babel-polyfill");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
