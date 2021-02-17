@@ -90,14 +90,14 @@ export const addChapterInSubject = (req, res) => {
 export const login = (req, res) => {
     console.log('login', req.body);
     const reqUser = req.body;
-    User.findOne({username: reqUser.username}, (err, user) => {
+    User.findOne({ username: reqUser.username }, (err, user) => {
         if (err) {
             res.sendStatus(401);
         } else {
             if (user && user.username === reqUser.username && user.password === reqUser.password) {
                 var token = jwt.sign({ userID: user.id }, 'edu-app-super-shared-secret', { expiresIn: '2h' });
                 delete user.password;
-                res.send({'token': token, 'user': user});
+                res.send({ 'token': token, 'user': user });
             } else {
                 res.sendStatus(401);
             }
@@ -116,7 +116,7 @@ export const register = (req, res) => {
         } else {
             var token = jwt.sign({ userID: user.id }, 'edu-app-super-shared-secret', { expiresIn: '2h' });
             delete user.password;
-            res.send({'token': token, 'user': user});
+            res.send({ 'token': token, 'user': user });
         }
     });
 }
@@ -138,8 +138,8 @@ export const getActivityByParams = (req, res) => {
     if (!req.body.grade || !req.body.subject) {
         res.send('Incorrect Parameters');
         return;
-    } 
-    Activity.find({"grade": req.body.grade, "subject": req.body.subject}, (activities, err) => {
+    }
+    Activity.find({ "grade": req.body.grade, "subject": req.body.subject }, (activities, err) => {
         if (err) {
             res.send(err)
         } else {
@@ -148,11 +148,39 @@ export const getActivityByParams = (req, res) => {
     })
 }
 
-export const addSubscription = async(req, res) => {
+export const addSubscription = async (req, res) => {
     console.log('Add Subscription');
     const reqObj = req.body;
     console.log(reqObj);
-    const currentUser = await User.findById(reqObj.user._id);
+    User.findById(reqObj.user._id)
+        .then(currentUser => {
+            if (currentUser.subscription.includes(reqObj.subject._id)) {
+                return res.json({
+                    message: 'Subject already subscribed by User!'
+                })
+            }
+            currentUser.subscription.push(reqObj.subject._id);
+            currentUser.save()
+                .then(updatedUser => {
+                    Subject.findById(reqObj.subject._id)
+                        .then(currentSubject => {
+                            if (currentSubject) {
+                                const subsObj = {
+                                    grade: updatedUser.grade,
+                                    subscriber: updatedUser._id
+                                }
+                                currentSubject.subscribers.push(subsObj);
+                                currentSubject.save()
+                                    .then(updatedSubject => {
+                                        res.json({ user: updatedUser, subject: updatedSubject });
+                                    })
+                            }
+                        })
+                })
+        }).catch(err => {
+            res.status(500).json({ error : err });
+          });
+    /* const currentUser = await User.findById(reqObj.user._id);
     if (currentUser) {
         if (currentUser.subscription.includes(reqObj.subject._id)) {
             return res.json({
@@ -171,7 +199,7 @@ export const addSubscription = async(req, res) => {
             const updatedSubject = await currentSubject.save();
             res.json({user: updatedUser, subject: updatedSubject});
         }
-    }
+    } */
 }
 
 /***************File Upload**********************/
@@ -183,13 +211,13 @@ const serviceAccount = require("../../cert/firebase-service-account-cert.json");
 const firebaseConfig = {
     credential: firebase.credential.cert(serviceAccount),
     storageBucket: 'gs://edu-app-42506.appspot.com'
-  };
-  firebase.initializeApp(firebaseConfig);
-  
-  // Get a reference to the storage service, which is used to create references in your storage bucket
+};
+firebase.initializeApp(firebaseConfig);
+
+// Get a reference to the storage service, which is used to create references in your storage bucket
 //   var storage = require('@google-cloud/storage');
 //   var storageRef = storage.ref();
-  const bucket = firebase.storage().bucket();
+const bucket = firebase.storage().bucket();
 
 /* const multer = require('multer')
 const upload = multer({ dest: 'uploads/' }).single('file');
@@ -225,7 +253,7 @@ export const fileUpload = async(req, res, next) => {
           }).catch(err => {
             res.send(err)
           })
-       
+
     });
 }
  */

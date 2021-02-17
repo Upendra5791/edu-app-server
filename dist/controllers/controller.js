@@ -166,7 +166,7 @@ var getActivityByParams = exports.getActivityByParams = function getActivityByPa
 
 var addSubscription = exports.addSubscription = function () {
     var _ref = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee(req, res) {
-        var reqObj, currentUser, updatedUser, currentSubject, subsObj, updatedSubject;
+        var reqObj;
         return regeneratorRuntime.wrap(function _callee$(_context) {
             while (1) {
                 switch (_context.prev = _context.next) {
@@ -175,59 +175,52 @@ var addSubscription = exports.addSubscription = function () {
                         reqObj = req.body;
 
                         console.log(reqObj);
-                        _context.next = 5;
-                        return _usersModel.User.findById(reqObj.user._id);
+                        _usersModel.User.findById(reqObj.user._id).then(function (currentUser) {
+                            if (currentUser.subscription.includes(reqObj.subject._id)) {
+                                return res.json({
+                                    message: 'Subject already subscribed by User!'
+                                });
+                            }
+                            currentUser.subscription.push(reqObj.subject._id);
+                            currentUser.save().then(function (updatedUser) {
+                                _subjectModel.Subject.findById(reqObj.subject._id).then(function (currentSubject) {
+                                    if (currentSubject) {
+                                        var subsObj = {
+                                            grade: updatedUser.grade,
+                                            subscriber: updatedUser._id
+                                        };
+                                        currentSubject.subscribers.push(subsObj);
+                                        currentSubject.save().then(function (updatedSubject) {
+                                            res.json({ user: updatedUser, subject: updatedSubject });
+                                        });
+                                    }
+                                });
+                            });
+                        }).catch(function (err) {
+                            res.status(500).json({ error: err });
+                        });
+                        /* const currentUser = await User.findById(reqObj.user._id);
+                        if (currentUser) {
+                            if (currentUser.subscription.includes(reqObj.subject._id)) {
+                                return res.json({
+                                    message: 'Subject already subscribed by User!'
+                                })
+                            }
+                            currentUser.subscription.push(reqObj.subject._id);
+                            const updatedUser = await currentUser.save();
+                            const currentSubject = await Subject.findById(reqObj.subject._id);
+                            if (currentSubject) {
+                                const subsObj = {
+                                    grade: updatedUser.grade,
+                                    subscriber: updatedUser._id
+                                }
+                                currentSubject.subscribers.push(subsObj);
+                                const updatedSubject = await currentSubject.save();
+                                res.json({user: updatedUser, subject: updatedSubject});
+                            }
+                        } */
 
-                    case 5:
-                        currentUser = _context.sent;
-
-                        if (!currentUser) {
-                            _context.next = 23;
-                            break;
-                        }
-
-                        if (!currentUser.subscription.includes(reqObj.subject._id)) {
-                            _context.next = 9;
-                            break;
-                        }
-
-                        return _context.abrupt('return', res.json({
-                            message: 'Subject already subscribed by User!'
-                        }));
-
-                    case 9:
-                        currentUser.subscription.push(reqObj.subject._id);
-                        _context.next = 12;
-                        return currentUser.save();
-
-                    case 12:
-                        updatedUser = _context.sent;
-                        _context.next = 15;
-                        return _subjectModel.Subject.findById(reqObj.subject._id);
-
-                    case 15:
-                        currentSubject = _context.sent;
-
-                        if (!currentSubject) {
-                            _context.next = 23;
-                            break;
-                        }
-
-                        subsObj = {
-                            grade: updatedUser.grade,
-                            subscriber: updatedUser._id
-                        };
-
-                        currentSubject.subscribers.push(subsObj);
-                        _context.next = 21;
-                        return currentSubject.save();
-
-                    case 21:
-                        updatedSubject = _context.sent;
-
-                        res.json({ user: updatedUser, subject: updatedSubject });
-
-                    case 23:
+                    case 4:
                     case 'end':
                         return _context.stop();
                 }
@@ -291,7 +284,7 @@ export const fileUpload = async(req, res, next) => {
           }).catch(err => {
             res.send(err)
           })
-       
+
     });
 }
  */
