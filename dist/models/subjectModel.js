@@ -41,7 +41,8 @@ var subjectSchema = new Schema({
         type: String,
         required: 'Enter Teacher Name'
     },
-    chapters: [chapterSchema]
+    chapters: [chapterSchema],
+    subscribers: [String]
 });
 
 var Subject = exports.Subject = _mongoose2.default.model('Subject', subjectSchema);

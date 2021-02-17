@@ -148,6 +148,15 @@ export const getActivityByParams = (req, res) => {
     })
 }
 
+export const addSubscription = (req, res) => {
+    console.log('Add Subscription');
+    const subject = req.body;
+    console.log(subject);
+    res.json({
+        message: 'added'
+    })
+}
+
 /***************File Upload**********************/
 
 /* Firebase Setup */

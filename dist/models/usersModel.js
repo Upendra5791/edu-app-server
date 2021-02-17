@@ -19,6 +19,7 @@ var userSchema = new Schema({
     mobile: String,
     email: String,
     grade: String,
-    teacher: Boolean
+    teacher: Boolean,
+    subscription: [String]
 });
 var User = exports.User = _mongoose2.default.model('User', userSchema);

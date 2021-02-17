@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
-exports.getActivityByParams = exports.addActivity = exports.register = exports.login = exports.addChapterInSubject = exports.getSubject = exports.addNewSubject = exports.getAllSubjects = exports.getUser = exports.getAllUsers = exports.addUser = undefined;
+exports.addSubscription = exports.getActivityByParams = exports.addActivity = exports.register = exports.login = exports.addChapterInSubject = exports.getSubject = exports.addNewSubject = exports.getAllSubjects = exports.getUser = exports.getAllUsers = exports.addUser = undefined;
 
 var _usersModel = require('../models/usersModel');
 
@@ -159,6 +159,15 @@ var getActivityByParams = exports.getActivityByParams = function getActivityByPa
         } else {
             res.json(activities);
         }
+    });
+};
+
+var addSubscription = exports.addSubscription = function addSubscription(req, res) {
+    console.log('Add Subscription');
+    var subject = req.body;
+    console.log(subject);
+    res.json({
+        message: 'added'
     });
 };
 

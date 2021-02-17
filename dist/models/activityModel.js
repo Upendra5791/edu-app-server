@@ -23,7 +23,7 @@ var fileSchema = new Schema({
     },
     subject: String,
     grade: String,
-    fileLink: String
+    link: String
 });
 
 var activitySchema = new Schema({

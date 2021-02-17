@@ -1,7 +1,8 @@
 import {
     getAllUsers, addUser, login, register,
     getAllSubjects, getSubject, addNewSubject,
-    addChapterInSubject, getUser, addActivity, getActivityByParams
+    addChapterInSubject, getUser, addActivity, getActivityByParams,
+    addSubscription
 } from '../controllers/controller';
 
 
@@ -9,6 +10,7 @@ import {
 const upload = multer({ dest: 'uploads/' }).single('file'); */
 
 const routes = (app) => {
+    /***** SUBJECT ROUTES *****/
     app.route('/subjects')
         .get(getAllSubjects)
         .post(addNewSubject)
@@ -18,7 +20,11 @@ const routes = (app) => {
 
     app.route('/subject/:subjectID')
         .get(getSubject)
+    
+    app.route('/addSubscription')
+    .post(addSubscription)
 
+    /***** USER ROUTES *****/
     app.route('getUser')
         .get(getAllUsers)
 
@@ -38,6 +44,7 @@ const routes = (app) => {
 /*     app.route('/upload')
         .post(fileUpload) */
 
+    /***** ACTIVITY ROUTES *****/
     app.route('/activity')
         .post(addActivity)
 

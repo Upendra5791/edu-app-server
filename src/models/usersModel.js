@@ -8,6 +8,7 @@ const userSchema = new Schema({
     mobile: String,
     email: String,
     grade: String,
-    teacher: Boolean
+    teacher: Boolean,
+    subscription: [String]
 });
 export const User = mongoose.model('User', userSchema);

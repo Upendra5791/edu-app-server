@@ -29,7 +29,8 @@ const subjectSchema = new Schema({
         type: String,
         required: 'Enter Teacher Name'
     },
-    chapters: [chapterSchema]
+    chapters: [chapterSchema],
+    subscribers: [String]
 })
 
 export const Subject = mongoose.model('Subject', subjectSchema);
