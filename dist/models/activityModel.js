@@ -36,6 +36,7 @@ var activitySchema = new Schema({
     },
     subject: String,
     grade: String,
+    enableStudentUpload: Boolean,
     teacherUpload: [fileSchema],
     studentUpload: [fileSchema]
 });
