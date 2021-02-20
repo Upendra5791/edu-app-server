@@ -12,7 +12,8 @@ const fileSchema = new Schema({
     },
     subject: String,
     grade: String,
-    link: String
+    link: String,
+    type: String
 });
 
 const activitySchema = new Schema({

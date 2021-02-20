@@ -90,11 +90,11 @@ export const addChapterInSubject = (req, res) => {
 export const login = (req, res) => {
     console.log('login', req.body);
     const reqUser = req.body;
-    User.findOne({ username: reqUser.username }, (err, user) => {
+    User.findOne({ username: reqUser.username.toLowerCase() }, (err, user) => {
         if (err) {
             res.sendStatus(401);
         } else {
-            if (user && user.username === reqUser.username && user.password === reqUser.password) {
+            if (user && user.username === reqUser.username.toLowerCase() && user.password === reqUser.password) {
                 var token = jwt.sign({ userID: user.id }, 'edu-app-super-shared-secret', { expiresIn: '2h' });
                 delete user.password;
                 res.send({ 'token': token, 'user': user });
@@ -110,15 +110,28 @@ export const register = (req, res) => {
     // add user to DB
     delete req.body._id;
     const newUser = new User(req.body);
-    newUser.save((err, user) => {
-        if (err) {
-            res.send(err)
-        } else {
-            var token = jwt.sign({ userID: user.id }, 'edu-app-super-shared-secret', { expiresIn: '2h' });
-            delete user.password;
-            res.send({ 'token': token, 'user': user });
-        }
-    });
+    User.find( { $or: [ { username: newUser.username.toLowerCase() }, { mobile: newUser.mobile }, { email: newUser.email} ] })
+        .then(userList => {
+            return validateUser(newUser, userList);
+        }).then(validateRes => {
+            if (validateRes.error) {
+                res.status(401).json({
+                    status: 'failed',
+                    message: validateRes.message
+                })
+            } else {
+                newUser.username = newUser.username.toLowerCase(); 
+                newUser.save((err, user) => {
+                    if (err) {
+                        res.send(err)
+                    } else {
+                        var token = jwt.sign({ userID: user.id }, 'edu-app-super-shared-secret', { expiresIn: '2h' });
+                        delete user.password;
+                        res.send({ 'token': token, 'user': user });
+                    }
+                });
+            }
+        })
 }
 
 export const addActivity = (req, res) => {
@@ -178,8 +191,8 @@ export const addSubscription = (req, res) => {
                         })
                 })
         }).catch(err => {
-            res.status(500).json({ error : err });
-          });
+            res.status(500).json({ error: err });
+        });
     /* const currentUser = await User.findById(reqObj.user._id);
     if (currentUser) {
         if (currentUser.subscription.includes(reqObj.subject._id)) {
@@ -205,16 +218,16 @@ export const addSubscription = (req, res) => {
 export const getStudentList = (req, res) => {
     console.log('Get Student List');
     const reqObj = req.body;
-        User.find({'grade': reqObj.grade})
-            .then(g_userList => {
-                return g_userList.filter(r => r.subscription.includes(reqObj.subjectID))
-            })
-            .then(userList => {
-                res.json(userList)
-            })
-            .catch(err => {
-                res.status(500).json({ error : err });
-            })
+    User.find({ 'grade': reqObj.grade })
+        .then(g_userList => {
+            return g_userList.filter(r => r.subscription.includes(reqObj.subjectID))
+        })
+        .then(userList => {
+            res.json(userList)
+        })
+        .catch(err => {
+            res.status(500).json({ error: err });
+        })
 }
 
 /***************File Upload**********************/
@@ -276,3 +289,22 @@ export const fileUpload = async(req, res, next) => {
     const file = bucket.file('bf94043931d71374eaa2772dcec54799');
     console.log(file);
 } */
+
+
+const validateUser = (newUser, userList) => {
+    const obj = {
+        error: false,
+        message: 'success'
+    }
+    if (userList.filter(r => r.username === newUser.username).length > 0) {
+        obj.error = true;
+        obj.message = 'This username is already registered!';
+    } else if (userList.filter(r => r.email === newUser.email).length > 0) {
+        obj.error = true;
+        obj.message = 'This email is already registered!';
+    } else if (userList.filter(r => r.mobile === newUser.mobile).length > 0) {
+        obj.error = true;
+        obj.message = 'This mobile number is already registered!';
+    }
+    return obj;
+}

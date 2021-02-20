@@ -104,11 +104,11 @@ var addChapterInSubject = exports.addChapterInSubject = function addChapterInSub
 var login = exports.login = function login(req, res) {
     console.log('login', req.body);
     var reqUser = req.body;
-    _usersModel.User.findOne({ username: reqUser.username }, function (err, user) {
+    _usersModel.User.findOne({ username: reqUser.username.toLowerCase() }, function (err, user) {
         if (err) {
             res.sendStatus(401);
         } else {
-            if (user && user.username === reqUser.username && user.password === reqUser.password) {
+            if (user && user.username === reqUser.username.toLowerCase() && user.password === reqUser.password) {
                 var token = _jsonwebtoken2.default.sign({ userID: user.id }, 'edu-app-super-shared-secret', { expiresIn: '2h' });
                 delete user.password;
                 res.send({ 'token': token, 'user': user });
@@ -124,13 +124,25 @@ var register = exports.register = function register(req, res) {
     // add user to DB
     delete req.body._id;
     var newUser = new _usersModel.User(req.body);
-    newUser.save(function (err, user) {
-        if (err) {
-            res.send(err);
+    _usersModel.User.find({ $or: [{ username: newUser.username.toLowerCase() }, { mobile: newUser.mobile }, { email: newUser.email }] }).then(function (userList) {
+        return validateUser(newUser, userList);
+    }).then(function (validateRes) {
+        if (validateRes.error) {
+            res.status(401).json({
+                status: 'failed',
+                message: validateRes.message
+            });
         } else {
-            var token = _jsonwebtoken2.default.sign({ userID: user.id }, 'edu-app-super-shared-secret', { expiresIn: '2h' });
-            delete user.password;
-            res.send({ 'token': token, 'user': user });
+            newUser.username = newUser.username.toLowerCase();
+            newUser.save(function (err, user) {
+                if (err) {
+                    res.send(err);
+                } else {
+                    var token = _jsonwebtoken2.default.sign({ userID: user.id }, 'edu-app-super-shared-secret', { expiresIn: '2h' });
+                    delete user.password;
+                    res.send({ 'token': token, 'user': user });
+                }
+            });
         }
     });
 };
@@ -285,3 +297,27 @@ export const fileUpload = async(req, res, next) => {
     const file = bucket.file('bf94043931d71374eaa2772dcec54799');
     console.log(file);
 } */
+
+var validateUser = function validateUser(newUser, userList) {
+    var obj = {
+        error: false,
+        message: 'success'
+    };
+    if (userList.filter(function (r) {
+        return r.username === newUser.username;
+    }).length > 0) {
+        obj.error = true;
+        obj.message = 'This username is already registered!';
+    } else if (userList.filter(function (r) {
+        return r.email === newUser.email;
+    }).length > 0) {
+        obj.error = true;
+        obj.message = 'This email is already registered!';
+    } else if (userList.filter(function (r) {
+        return r.mobile === newUser.mobile;
+    }).length > 0) {
+        obj.error = true;
+        obj.message = 'This mobile number is already registered!';
+    }
+    return obj;
+};
