@@ -5,6 +5,7 @@ const Schema = mongoose.Schema;
 const fileSchema = new Schema({
     name: String,
     author: String,
+    authorName: String,
     description: String,
     createdDate: {
         type: Date,
@@ -13,7 +14,8 @@ const fileSchema = new Schema({
     subject: String,
     grade: String,
     link: String,
-    type: String
+    type: String,
+    activityId: String
 });
 
 const activitySchema = new Schema({
@@ -28,6 +30,6 @@ const activitySchema = new Schema({
     grade: String,
     enableStudentUpload: Boolean,
     teacherUpload: [fileSchema],
-    studentUpload: [fileSchema]
+    studentUpload: [String]
 });
 export const Activity = mongoose.model('Activity', activitySchema);

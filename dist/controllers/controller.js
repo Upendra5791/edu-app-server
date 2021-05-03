@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
-exports.getStudentList = exports.addSubscription = exports.getActivityByParams = exports.addActivity = exports.register = exports.login = exports.addChapterInSubject = exports.getSubject = exports.addNewSubject = exports.getAllSubjects = exports.getUser = exports.getAllUsers = exports.addUser = undefined;
+exports.getStudentList = exports.addSubscription = exports.getUploadsbyActivity = exports.getRecentStudentUploads = exports.addStudentUpload = exports.getActivityByParams = exports.updateActivity = exports.deleteActivity = exports.addActivity = exports.register = exports.login = exports.addChapterInSubject = exports.getSubject = exports.addNewSubject = exports.getAllSubjects = exports.getUser = exports.getAllUsers = exports.updateUser = exports.addUser = undefined;
 
 var _usersModel = require('../models/usersModel');
 
@@ -15,7 +15,11 @@ var _jsonwebtoken2 = _interopRequireDefault(_jsonwebtoken);
 
 var _activityModel = require('../models/activityModel');
 
+var _studentUploadModel = require('../models/studentUploadModel');
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var Promise = require('promise');
 
 var addUser = exports.addUser = function addUser(req, res) {
     console.log('Add User');
@@ -26,6 +30,15 @@ var addUser = exports.addUser = function addUser(req, res) {
         } else {
             res.json(user);
         }
+    });
+};
+
+var updateUser = exports.updateUser = function updateUser(req, res) {
+    console.log('Update User');
+    _usersModel.User.findByIdAndUpdate(req.body._id, req.body, { new: true, useFindAndModify: false }).then(function (updatedUser) {
+        res.json(updatedUser);
+    }).catch(function (err) {
+        res.status(500).send(err);
     });
 };
 
@@ -104,11 +117,11 @@ var addChapterInSubject = exports.addChapterInSubject = function addChapterInSub
 var login = exports.login = function login(req, res) {
     console.log('login', req.body);
     var reqUser = req.body;
-    _usersModel.User.findOne({ username: reqUser.username.toLowerCase() }, function (err, user) {
+    _usersModel.User.findOne({ email: reqUser.email.toLowerCase() }, function (err, user) {
         if (err) {
             res.sendStatus(401);
         } else {
-            if (user && user.username === reqUser.username.toLowerCase() && user.password === reqUser.password) {
+            if (user && user.email === reqUser.email.toLowerCase() && user.password === reqUser.password) {
                 var token = _jsonwebtoken2.default.sign({ userID: user.id }, 'edu-app-super-shared-secret', { expiresIn: '2h' });
                 delete user.password;
                 res.send({ 'token': token, 'user': user });
@@ -159,6 +172,31 @@ var addActivity = exports.addActivity = function addActivity(req, res) {
     });
 };
 
+var deleteActivity = exports.deleteActivity = function deleteActivity(req, res) {
+    console.log('Delete Activity');
+    var act = req.body;
+    console.log(act);
+    _activityModel.Activity.findByIdAndDelete(act._id, function (err, resp) {
+        if (err) {
+            res.send(err);
+        } else {
+            res.json(resp);
+        }
+    });
+};
+
+var updateActivity = exports.updateActivity = function updateActivity(req, res) {
+    console.log('update Activity');
+    var act = new _activityModel.Activity(req.body);
+    _activityModel.Activity.findByIdAndUpdate(act._id, act, function (err, resp) {
+        if (err) {
+            res.send(err);
+        } else {
+            res.json(resp);
+        }
+    });
+};
+
 var getActivityByParams = exports.getActivityByParams = function getActivityByParams(req, res) {
     console.log('Get Activity');
     if (!req.body.grade || !req.body.subject) {
@@ -171,6 +209,38 @@ var getActivityByParams = exports.getActivityByParams = function getActivityByPa
         } else {
             res.json(activities);
         }
+    });
+};
+
+var addStudentUpload = exports.addStudentUpload = function addStudentUpload(req, res) {
+    console.log('Add New Student Upload');
+    var newUpload = new _studentUploadModel.StudentUpload(req.body.file);
+    newUpload.save().then(function (upload) {
+        var act = req.body.activity;
+        act.studentUpload.push(upload._id);
+        _activityModel.Activity.findByIdAndUpdate(act._id, act, { new: true, useFindAndModify: false }).then(function (updatedAct) {
+            res.json(updatedAct);
+        }).catch(function (err) {
+            res.send(err);
+        });
+    });
+};
+
+var getRecentStudentUploads = exports.getRecentStudentUploads = function getRecentStudentUploads(req, res) {
+    console.log('Get Student List');
+    _studentUploadModel.StudentUpload.find({ 'author': req.body.userId, 'activityId': req.body.activityId }).then(function (list) {
+        res.json(list);
+    }).catch(function (err) {
+        res.status(500).json({ error: err });
+    });
+};
+
+var getUploadsbyActivity = exports.getUploadsbyActivity = function getUploadsbyActivity(req, res) {
+    console.log('Get Student update List by activity');
+    _studentUploadModel.StudentUpload.find({ 'activityId': req.params.activityId }).then(function (list) {
+        res.json(list);
+    }).catch(function (err) {
+        res.status(500).json({ error: err });
     });
 };
 
@@ -237,6 +307,26 @@ var getStudentList = exports.getStudentList = function getStudentList(req, res) 
         res.status(500).json({ error: err });
     });
 };
+
+function getUserListByParams(subjectID, grade) {
+    return new Promise(function (resolve, reject) {
+        _usersModel.User.find({ 'grade': grade }, function (err, res) {
+            if (err) {
+                reject(err);
+            } else {
+                var userList = [];
+                if (res) {
+                    userList = res.filter(function (r) {
+                        return r.subscription.includes(subjectID);
+                    });
+                    resolve(userList);
+                } else {
+                    reject(userList);
+                }
+            }
+        });
+    });
+}
 
 /***************File Upload**********************/
 
@@ -320,4 +410,36 @@ var validateUser = function validateUser(newUser, userList) {
         obj.message = 'This mobile number is already registered!';
     }
     return obj;
+};
+
+/********* Notification Handler *********/
+
+var addToNotification = function addToNotification(activity) {
+    return new Promise(function (resolve, reject) {
+        getUserListByParams(activity.subject, activity.grade).then(function (users) {
+            if (users) {
+                var userList = users;
+                var notification = {
+                    summary: 'Sample notification',
+                    description: 'This is a sample notification description',
+                    type: 'new-activity'
+                };
+                userList.forEach(function (user) {
+                    user.notifications.push(notification);
+                    user.save(function (err, subject) {
+                        if (err) {
+                            console.log('Error adding notification to user');
+                            // reject('Error adding notification to user')
+                        } else {
+                            console.log('Notification added');
+                        }
+                    });
+                });
+                resolve('Notification added');
+            }
+        }).catch(function (err) {
+            console.log('Error retreiving user list');
+            reject('Error retreiving user list');
+        });
+    });
 };

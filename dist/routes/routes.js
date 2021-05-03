@@ -28,12 +28,24 @@ var routes = function routes(app) {
 
     app.route('/user/:userID').get(_controller.getUser);
 
+    app.route('/updateUser').post(_controller.updateUser);
+
     app.route('/getStudentList').post(_controller.getStudentList);
 
     /***** ACTIVITY ROUTES *****/
     app.route('/activity').post(_controller.addActivity);
 
     app.route('/getActivityByParams').post(_controller.getActivityByParams);
+
+    app.route('/deleteActivity').post(_controller.deleteActivity);
+
+    app.route('/updateActivity').post(_controller.updateActivity);
+
+    app.route('/addStudentUpload').post(_controller.addStudentUpload);
+
+    app.route('/getRecentStudentUploads').post(_controller.getRecentStudentUploads);
+
+    app.route('/getuploadsByActivity/:activityId').get(_controller.getUploadsbyActivity);
 
     app.route('/test').get(function (req, res) {
         res.send('API test successful!');

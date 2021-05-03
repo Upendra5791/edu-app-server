@@ -2,6 +2,8 @@ import {
     getAllUsers, addUser, login, register,
     getAllSubjects, getSubject, addNewSubject,
     addChapterInSubject, getUser, addActivity, getActivityByParams,
+    deleteActivity, updateActivity, addStudentUpload, getRecentStudentUploads,
+    getUploadsbyActivity, updateUser,
     addSubscription, getStudentList
 } from '../controllers/controller';
 
@@ -38,6 +40,9 @@ const routes = (app) => {
     app.route('/user/:userID')
         .get(getUser)
 
+    app.route('/updateUser')
+        .post(updateUser)
+
     app.route('/getStudentList')
         .post(getStudentList)
 
@@ -47,6 +52,21 @@ const routes = (app) => {
 
     app.route('/getActivityByParams')
     .post(getActivityByParams)
+
+    app.route('/deleteActivity')
+    .post(deleteActivity)
+
+    app.route('/updateActivity')
+    .post(updateActivity)
+
+    app.route('/addStudentUpload')
+    .post(addStudentUpload)
+
+    app.route('/getRecentStudentUploads')
+    .post(getRecentStudentUploads)
+
+    app.route('/getuploadsByActivity/:activityId')
+    .get(getUploadsbyActivity)
 
     app.route('/test')
         .get((req, res) => {

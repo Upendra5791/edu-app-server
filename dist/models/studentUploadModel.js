@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
-exports.Activity = undefined;
+exports.StudentUpload = undefined;
 
 var _mongoose = require("mongoose");
 
@@ -13,7 +13,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 var Schema = _mongoose2.default.Schema;
 
-var fileSchema = new Schema({
+var studentUploadSchema = new Schema({
     name: String,
     author: String,
     authorName: String,
@@ -28,19 +28,4 @@ var fileSchema = new Schema({
     type: String,
     activityId: String
 });
-
-var activitySchema = new Schema({
-    title: String,
-    author: String,
-    description: String,
-    createdDate: {
-        type: Date,
-        default: Date.now
-    },
-    subject: String,
-    grade: String,
-    enableStudentUpload: Boolean,
-    teacherUpload: [fileSchema],
-    studentUpload: [String]
-});
-var Activity = exports.Activity = _mongoose2.default.model('Activity', activitySchema);
+var StudentUpload = exports.StudentUpload = _mongoose2.default.model('StudentUpload', studentUploadSchema);

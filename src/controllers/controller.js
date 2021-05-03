@@ -2,6 +2,8 @@ import { User } from '../models/usersModel';
 import { Subject } from '../models/subjectModel';
 import jwt from 'jsonwebtoken';
 import { Activity } from '../models/activityModel';
+import { StudentUpload } from '../models/studentUploadModel';
+var Promise = require('promise');
 
 export const addUser = (req, res) => {
     console.log('Add User')
@@ -12,6 +14,17 @@ export const addUser = (req, res) => {
         } else {
             res.json(user)
         }
+    })
+}
+
+export const updateUser = (req, res) => {
+    console.log('Update User');
+    User.findByIdAndUpdate(req.body._id, req.body, { new: true, useFindAndModify: false})
+    .then(updatedUser => {
+        res.json(updatedUser);
+    })
+    .catch(err => {
+        res.status(500).send(err);
     })
 }
 
@@ -90,11 +103,11 @@ export const addChapterInSubject = (req, res) => {
 export const login = (req, res) => {
     console.log('login', req.body);
     const reqUser = req.body;
-    User.findOne({ username: reqUser.username.toLowerCase() }, (err, user) => {
+    User.findOne({ email: reqUser.email.toLowerCase() }, (err, user) => {
         if (err) {
             res.sendStatus(401);
         } else {
-            if (user && user.username === reqUser.username.toLowerCase() && user.password === reqUser.password) {
+            if (user && user.email === reqUser.email.toLowerCase() && user.password === reqUser.password) {
                 var token = jwt.sign({ userID: user.id }, 'edu-app-super-shared-secret', { expiresIn: '2h' });
                 delete user.password;
                 res.send({ 'token': token, 'user': user });
@@ -146,6 +159,31 @@ export const addActivity = (req, res) => {
     })
 }
 
+export const deleteActivity = (req, res) => {
+    console.log('Delete Activity');
+    const act = req.body;
+    console.log(act);
+    Activity.findByIdAndDelete(act._id, (err, resp) => {
+        if (err) {
+            res.send(err);
+        } else {
+            res.json(resp);
+        } 
+    })
+}
+
+export const updateActivity = (req, res) => {
+    console.log('update Activity');
+    const act = new Activity(req.body);
+    Activity.findByIdAndUpdate(act._id, act, (err, resp) => {
+        if (err) {
+            res.send(err);
+        } else {
+            res.json(resp);
+        } 
+    })
+}
+
 export const getActivityByParams = (req, res) => {
     console.log('Get Activity');
     if (!req.body.grade || !req.body.subject) {
@@ -159,6 +197,45 @@ export const getActivityByParams = (req, res) => {
             res.json(activities)
         }
     })
+}
+
+export const addStudentUpload = (req, res) => {
+    console.log('Add New Student Upload');
+    const newUpload = new StudentUpload(req.body.file);
+    newUpload.save()
+        .then(upload => {
+            const act = req.body.activity;
+            act.studentUpload.push(upload._id);
+            Activity.findByIdAndUpdate(act._id, act, { new: true, useFindAndModify: false})
+                .then(updatedAct => {
+                    res.json(updatedAct);
+                })
+            .catch(err => {
+                res.send(err);
+            })
+        })
+} 
+
+export const getRecentStudentUploads = (req, res) => {
+    console.log('Get Student List');
+    StudentUpload.find({'author': req.body.userId, 'activityId': req.body.activityId})
+        .then(list => {
+            res.json(list);
+        })
+        .catch(err => {
+            res.status(500).json({ error: err });
+        })
+}
+
+export const getUploadsbyActivity = (req, res) => {
+    console.log('Get Student update List by activity');
+    StudentUpload.find({'activityId': req.params.activityId})
+        .then(list => {
+            res.json(list);
+        })
+        .catch(err => {
+            res.status(500).json({ error: err });
+        })
 }
 
 export const addSubscription = (req, res) => {
@@ -228,6 +305,25 @@ export const getStudentList = (req, res) => {
         .catch(err => {
             res.status(500).json({ error: err });
         })
+}
+
+function getUserListByParams(subjectID, grade) {
+    return new Promise(function(resolve, reject) {
+        User.find({ 'grade': grade }, function(err, res) {
+            if (err) {
+                reject(err)
+            } else {
+                let userList = [];
+                if (res) {
+                    userList = res.filter(r => r.subscription.includes(subjectID))
+                    resolve(userList)
+                } else {
+                    reject(userList);
+                }
+               
+            }
+        })
+    })
 }
 
 /***************File Upload**********************/
@@ -307,4 +403,40 @@ const validateUser = (newUser, userList) => {
         obj.message = 'This mobile number is already registered!';
     }
     return obj;
+}
+
+
+/********* Notification Handler *********/
+
+const addToNotification = (activity) => {
+    return new Promise((resolve, reject) => {
+        getUserListByParams(activity.subject, activity.grade)
+        .then(users => {
+            if (users) {
+                const userList = users;
+                const notification = {
+                    summary: 'Sample notification',
+                    description: 'This is a sample notification description',
+                    type: 'new-activity'
+                }
+                userList.forEach(user => {
+                    user.notifications.push(notification);
+                    user.save((err, subject) => {
+                        if (err) {
+                            console.log('Error adding notification to user');
+                            // reject('Error adding notification to user')
+                        } else {
+                            console.log('Notification added');
+                        }
+                    })
+
+                });
+                resolve('Notification added')
+            }
+        })
+        .catch(err => {
+            console.log('Error retreiving user list');
+            reject('Error retreiving user list')
+        })
+     })
 }

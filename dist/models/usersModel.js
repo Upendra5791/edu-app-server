@@ -13,6 +13,16 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 var Schema = _mongoose2.default.Schema;
 
+var notificationSchema = new Schema({
+    summary: String,
+    description: String,
+    createdDate: {
+        type: Date,
+        default: Date.now
+    },
+    type: String
+});
+
 var userSchema = new Schema({
     username: String,
     password: String,
@@ -20,6 +30,9 @@ var userSchema = new Schema({
     email: String,
     grade: String,
     teacher: Boolean,
-    subscription: [String]
+    subscription: [String],
+    notifications: [notificationSchema],
+    avatar: String
+
 });
 var User = exports.User = _mongoose2.default.model('User', userSchema);
