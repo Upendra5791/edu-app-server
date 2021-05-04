@@ -6,6 +6,20 @@ import expressJwt from 'express-jwt';
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+/********** Web Push Code START *************/
+export let USER_SUBSCRIPTIONS = [];
+const webpush = require('web-push');
+const vapidKeys = {
+    "publicKey":"BH5fjP4Qn5Paevuz31UOI4rzCwHhQ8B956rUCkjloQh_87K-OaP0d5EUOuJUwxOquph3-IDlPi-yeS1nnpeJuNA",
+    "privateKey":"Tfz4En7TIGE1ZtV6mVKHaANKTl_ZKuxWg-UXC6vXer4"
+    };
+webpush.setVapidDetails(
+    'mailto:example@yourdomain.org',
+    vapidKeys.publicKey,
+    vapidKeys.privateKey
+);
+/********** Web Push Code END *************/
+
 /* const functions = require('firebase-functions');
 const admin = require('firebase-admin');
 admin.initializeApp(); */

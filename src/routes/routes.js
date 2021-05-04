@@ -7,6 +7,9 @@ import {
     addSubscription, getStudentList
 } from '../controllers/controller';
 
+import { sendNewsletter, addPushSubscriber }
+from '../controllers/notifications-controller'
+
 
 /* const multer = require('multer')
 const upload = multer({ dest: 'uploads/' }).single('file'); */
@@ -73,6 +76,11 @@ const routes = (app) => {
             res.send('API test successful!')
         })
 
+    /***** NOTIFICATION ROUTES *****/
+    app.route('/notifications')
+    .post(addPushSubscriber)
+    app.route('/newsletter')
+    .post(sendNewsletter)
 
 }
 
