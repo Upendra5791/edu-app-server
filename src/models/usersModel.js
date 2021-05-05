@@ -12,7 +12,7 @@ const notificationSchema = new Schema({
     type: String
 })
 
-const userSchema = new Schema({
+export const userSchema = new Schema({
     username: String,
     password: String,
     mobile: String,

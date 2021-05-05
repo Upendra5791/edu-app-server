@@ -3,6 +3,7 @@ import { Subject } from '../models/subjectModel';
 import jwt from 'jsonwebtoken';
 import { Activity } from '../models/activityModel';
 import { StudentUpload } from '../models/studentUploadModel';
+import { pushNotifications } from '../controllers/notifications-controller'
 var Promise = require('promise');
 
 export const addUser = (req, res) => {
@@ -155,6 +156,7 @@ export const addActivity = (req, res) => {
             res.send(err);
         } else {
             res.json(activity);
+            pushNotifications(activity)
         }
     })
 }
@@ -241,7 +243,6 @@ export const getUploadsbyActivity = (req, res) => {
 export const addSubscription = (req, res) => {
     console.log('Add Subscription');
     const reqObj = req.body;
-    console.log(reqObj);
     User.findById(reqObj.user._id)
         .then(currentUser => {
             if (currentUser.subscription.includes(reqObj.subject._id)) {

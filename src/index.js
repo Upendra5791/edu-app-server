@@ -7,7 +7,6 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 /********** Web Push Code START *************/
-export let USER_SUBSCRIPTIONS = [];
 const webpush = require('web-push');
 const vapidKeys = {
     "publicKey":"BH5fjP4Qn5Paevuz31UOI4rzCwHhQ8B956rUCkjloQh_87K-OaP0d5EUOuJUwxOquph3-IDlPi-yeS1nnpeJuNA",
