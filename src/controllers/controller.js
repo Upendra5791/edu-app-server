@@ -124,9 +124,9 @@ export const register = (req, res) => {
     // add user to DB
     delete req.body._id;
     const newUser = new User(req.body);
-    User.find( { $or: [ { username: newUser.username.toLowerCase() }, { mobile: newUser.mobile }, { email: newUser.email} ] })
+    User.find( { $or: [ { username: newUser.username.toLowerCase() }, { mobile: newUser.mobile }, { email: newUser.email.toLowerCase()} ] })
         .then(userList => {
-            return validateUser(newUser, userList);
+            return validateUser(req.body, userList);
         }).then(validateRes => {
             if (validateRes.error) {
                 res.status(401).json({
@@ -134,7 +134,6 @@ export const register = (req, res) => {
                     message: validateRes.message
                 })
             } else {
-                newUser.username = newUser.username.toLowerCase(); 
                 newUser.save((err, user) => {
                     if (err) {
                         res.send(err)
@@ -402,8 +401,17 @@ const validateUser = (newUser, userList) => {
     } else if (userList.filter(r => r.mobile === newUser.mobile).length > 0) {
         obj.error = true;
         obj.message = 'This mobile number is already registered!';
+    } else if (newUser.teacher) {
+        if (!validateAuthCode(newUser)) {
+            obj.error = true;
+            obj.message = 'Incorrect Auth Code!';
+        }
     }
     return obj;
+}
+
+const validateAuthCode = (user) => {
+    return (user && user.authCode && user.authCode === 12345)
 }
 
 
