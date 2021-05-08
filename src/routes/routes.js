@@ -3,7 +3,7 @@ import {
     getAllSubjects, getSubject, addNewSubject,
     addChapterInSubject, getUser, addActivity, getActivityByParams,
     deleteActivity, updateActivity, addStudentUpload, getRecentStudentUploads,
-    getUploadsbyActivity, updateUser,
+    getUploadsbyActivity, updateUser, notificationAction,
     addSubscription, getStudentList
 } from '../controllers/controller';
 
@@ -48,6 +48,9 @@ const routes = (app) => {
 
     app.route('/getStudentList')
         .post(getStudentList)
+        
+    app.route('/notificationAction')
+    .post(notificationAction)
 
     /***** ACTIVITY ROUTES *****/
     app.route('/activity')

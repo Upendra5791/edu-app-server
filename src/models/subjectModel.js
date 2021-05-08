@@ -25,7 +25,11 @@ const subjectSchema = new Schema({
         type: String,
         required: 'Enter Name'
     },
-    teacher: {
+    teacherId: {
+        type: String,
+        required: 'Enter Teacher ID'
+    },
+    teacherName: {
         type: String,
         required: 'Enter Teacher Name'
     },

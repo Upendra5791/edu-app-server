@@ -50,6 +50,41 @@ export const getUser = (req, res) => {
     })
 }
 
+export const notificationAction = (req, res) => {
+    console.log('Notification Action');
+    const nf = req.body;
+    switch(nf.type) {
+        case 'subject-subscription-approval':
+        User.findById(nf.subscriber)
+            .then(user => {
+                user.subscription.find(r => r.subId === nf.subject).approved = true;
+                user.save()
+                    .then(updatedUser => {
+                        Subject.findById(nf.subject)
+                            .then(sub => {
+                                sub.subscribers.push({subscriber: updatedUser._id, grade: updatedUser.grade});
+                                sub.save()
+                                    .then(resp => {
+                                        User.findById(nf.teacherId)
+                                            .then(teacher => {
+                                                teacher.notifications = teacher.notifications.filter(tnf => {
+                                                    return tnf.id !== nf.nfid;
+                                                  });
+                                                  teacher.save()
+                                                    .then(updatedTeacher => {
+                                                        res.json(updatedTeacher)
+                                                    })
+                                            })
+                                    })
+                            })
+                    })
+            })
+            .catch(err => {
+                res.status(500).send(err);
+            })
+    }
+}
+
 export const getAllSubjects = (req, res) => {
     console.log('Get All Subjects');
     Subject.find({}, (subjects, err) => {
@@ -249,10 +284,31 @@ export const addSubscription = (req, res) => {
                     message: 'Subject already subscribed by User!'
                 })
             }
-            currentUser.subscription.push(reqObj.subject._id);
+            currentUser.subscription.push({subId: reqObj.subject._id, approved: false});
             currentUser.save()
                 .then(updatedUser => {
-                    Subject.findById(reqObj.subject._id)
+                    /* Add notification to teacher's profile for approval*/
+                    const teacherId = reqObj.subject.teacherId;
+                    User.findById(teacherId)
+                    .then(teacher => {
+                        const notf = {
+                            type: 'subject-subscription-approval',
+                            data: {
+                                subscriber: reqObj.user._id,
+                                subscriberName: reqObj.user.username,
+                                subscriberGrade: reqObj.user.grade,
+                                subject: reqObj.subject._id,
+                                subjectName: reqObj.subject.name
+                            }
+                        }
+                        teacher.notifications.push(notf);
+                        teacher.save()
+                            .then(updatedTeacher => {
+                                res.json({ user: updatedUser });
+                            })
+                    })
+                    
+                    /* Subject.findById(reqObj.subject._id)
                         .then(currentSubject => {
                             if (currentSubject) {
                                 const subsObj = {
@@ -265,7 +321,7 @@ export const addSubscription = (req, res) => {
                                         res.json({ user: updatedUser, subject: updatedSubject });
                                     })
                             }
-                        })
+                        }) */
                 })
         }).catch(err => {
             res.status(500).json({ error: err });

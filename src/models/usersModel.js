@@ -1,3 +1,4 @@
+import { MongoClient } from "mongodb";
 import mongoose from "mongoose";
 
 const Schema = mongoose.Schema;
@@ -9,7 +10,8 @@ const notificationSchema = new Schema({
         type: Date,
         default: Date.now
     },
-    type: String
+    type: String,
+    data:  Schema.Types.Mixed,
 })
 
 export const userSchema = new Schema({
@@ -19,9 +21,18 @@ export const userSchema = new Schema({
     email: String,
     grade: String,
     teacher: Boolean,
-    subscription: [String],
+    subscription: [
+        {
+            subId: String,
+            approved: {
+                type: Boolean,
+                default: false
+            }
+        }
+    ],
     notifications: [notificationSchema],
-    avatar: String
+    avatar: String,
+    subjects: [String]
 
 });
 export const User = mongoose.model('User', userSchema);
