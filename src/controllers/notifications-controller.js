@@ -30,7 +30,8 @@ export function addPushSubscriber(req, res) {
 const webpush = require('web-push');
 
 const getSubscribers = (activity, USER_SUBSCRIPTIONS) => {
-    return USER_SUBSCRIPTIONS.filter(subObj => subObj.user.grade === activity.grade && subObj.user.subscription.includes(activity.subject));
+    return USER_SUBSCRIPTIONS
+    .filter(subObj => subObj.user.grade === activity.grade && subObj.user.subscription.find(f => f.subId === activity.subject));
 }
 
 export function sendNewsletter(req, res) {
@@ -72,7 +73,7 @@ export function pushNotifications(activity) {
         actBody = actBody.substr(0,100);
     }
     actBody = `${actBody}...
-    Updated by: ${activity.author}`;
+Updated by: ${activity.author}`;
     const notificationPayload = {
         "notification": {
             "title": activity.title,

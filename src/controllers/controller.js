@@ -4,6 +4,7 @@ import jwt from 'jsonwebtoken';
 import { Activity } from '../models/activityModel';
 import { StudentUpload } from '../models/studentUploadModel';
 import { pushNotifications } from '../controllers/notifications-controller'
+import { Subscription } from '../models/subscriptionModel';
 var Promise = require('promise');
 
 export const addUser = (req, res) => {
@@ -60,6 +61,12 @@ export const notificationAction = (req, res) => {
                 user.subscription.find(r => r.subId === nf.subject).approved = true;
                 user.save()
                     .then(updatedUser => {
+                        // update the subscription document with latest user details
+                        Subscription.findOne({userId: updatedUser._id})
+                        .then(subObj => {
+                            subObj.user = updatedUser;
+                            subObj.save();
+                        })
                         Subject.findById(nf.subject)
                             .then(sub => {
                                 sub.subscribers.push({subscriber: updatedUser._id, grade: updatedUser.grade});
