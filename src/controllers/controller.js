@@ -79,7 +79,8 @@ export const notificationAction = (req, res) => {
                                                   });
                                                   teacher.save()
                                                     .then(updatedTeacher => {
-                                                        res.json(updatedTeacher)
+                                                        res.json(updatedTeacher);
+                                                        pushNotifications({teacher: updatedTeacher, sub, user}, 'approveSubscription');
                                                     })
                                             })
                                     })
@@ -197,7 +198,7 @@ export const addActivity = (req, res) => {
             res.send(err);
         } else {
             res.json(activity);
-            pushNotifications(activity)
+            pushNotifications({activity}, 'addActivity')
         }
     })
 }
@@ -312,6 +313,7 @@ export const addSubscription = (req, res) => {
                         teacher.save()
                             .then(updatedTeacher => {
                                 res.json({ user: updatedUser });
+                                pushNotifications({teacher: updatedTeacher, sub: reqObj.subject, user: updatedUser}, 'addSubscription');
                             })
                     })
                     

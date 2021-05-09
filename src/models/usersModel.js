@@ -32,7 +32,8 @@ export const userSchema = new Schema({
     ],
     notifications: [notificationSchema],
     avatar: String,
-    subjects: [String]
+    subjects: [String],
+    appSubscription: Boolean
 
 });
 export const User = mongoose.model('User', userSchema);

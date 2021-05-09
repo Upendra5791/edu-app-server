@@ -1,4 +1,5 @@
 import { Subscription } from '../models/subscriptionModel';
+import { User } from '../models/usersModel';
 
 export function addPushSubscriber(req, res) {
     console.log('add notification subscriber!');
@@ -18,7 +19,14 @@ export function addPushSubscriber(req, res) {
             newSub.save()
             .then(nsub => {
                 console.log('Added Subscription on the server: ', nsub);
-                res.status(200).json({ message: "Subscription added successfully!" });
+                User.findById(subObj.user._id)
+                    .then(subUser => {
+                        subUser.appSubscription = true;
+                        subUser.save()
+                            .then(updatedUser => {
+                                res.status(200).json(updatedUser);
+                            })
+                    })            
             })
         }
     })
@@ -29,55 +37,44 @@ export function addPushSubscriber(req, res) {
 
 const webpush = require('web-push');
 
-const getSubscribers = (activity, USER_SUBSCRIPTIONS) => {
+const getSubscribers = (data, USER_SUBSCRIPTIONS) => {
     return USER_SUBSCRIPTIONS
-    .filter(subObj => subObj.user.grade === activity.grade && subObj.user.subscription.find(f => f.subId === activity.subject));
+    .filter(subObj =>
+        data.type === 'addSubscription' ?
+        subObj.userId === data.teacherId :
+        subObj.user.grade === data.grade && subObj.user.subscription.find(f => f.subId === data.subjectId));
 }
 
-export function sendNewsletter(req, res) {
 
-    console.log('Total subscriptions', USER_SUBSCRIPTIONS.length);
-
-    // sample notification payload
-    const notificationPayload = {
-        "notification": {
-            "title": "New Update",
-            "body": "You have an update!",
-            "icon": "assets/android-icon-192x192.png",
-            "vibrate": [100, 50, 100],
-            "data": {
-                "dateOfArrival": Date.now(),
-                "primaryKey": 1
-            },
-            "actions": [{
-                "action": "explore",
-                "title": "Go to the site"
-            }]
-        }
-    };
-
-    Promise.all(USER_SUBSCRIPTIONS
-        .map(subObj => webpush.sendNotification(
-        subObj.sub, JSON.stringify(notificationPayload))))
-        .then(() => res.status(200).json({ message: 'Newsletter sent successfully.' }))
-        .catch(err => {
-            console.error("Error sending notification, reason: ", err);
-            res.sendStatus(500);
-        });
-
-}
-
-export function pushNotifications(activity) {
-    let actBody = activity.description 
-    if (actBody.length > 100) {
-        actBody = actBody.substr(0,100);
+function getNotificationText(data, type) {
+    let title = '';
+    let body = '';
+    switch (type) {
+        case 'addActivity':
+            title = data.activity.title;
+            body = data.activity.description 
+            if (body.length > 100) {
+                body = body.substr(0,100) + '...';
+            }
+            body = `${body}
+Updated by: ${data.activity.author}`;
+            break;        
+        case 'approveSubscription':
+            title = 'Subscription Approved!';
+            body = `Your subscription request for ${data.sub.name} has been approved by ${data.teacher.username}.`;
+            break;
+        case 'addSubscription':
+            title = 'Subscription Request!';
+            body = `${data.user.username} has requested subscription for ${data.sub.name}, ${data.user.grade}`;
+            break;
+        default:
+            break;
     }
-    actBody = `${actBody}...
-Updated by: ${activity.author}`;
+
     const notificationPayload = {
         "notification": {
-            "title": activity.title,
-            "body": actBody,
+            "title": title,
+            "body": body,
             "icon": "assets/android-icon-192x192.png",
             "vibrate": [100, 50, 100],
             "data": {
@@ -91,13 +88,50 @@ Updated by: ${activity.author}`;
         }
     };
 
+    return notificationPayload;
+}
+
+function getSubObj(data, type) {
+    let grade, subjectId, teacherId;
+    switch (type) {
+        case 'addActivity':
+            grade = data.activity.grade;
+            subjectId = data.activity.subject;
+            teacherId = null;
+            break;
+        case 'addSubscription':
+            grade = data.user.grade;
+            subjectId = data.sub._id;
+            teacherId = data.teacher.id;
+        break;
+        case 'approveSubscription':
+            grade = data.user.grade;
+            subjectId = data.sub.id;
+            teacherId = data.teacher.id;
+        break;    
+        default:
+            break;
+    }
+    return { grade, subjectId, type, teacherId }
+}
+
+export function pushNotifications(data, type) {
+    /* data = {
+        user: User,
+        sub: Subject,
+        teacher: User
+        activity: Activity
+    } */
+
+    const notificationPayload = getNotificationText(data, type);
+    const subObj = getSubObj(data, type);
     /***
-     * Fetch all ubscriptions
-     * Based on activity filter the target subscriptions
+     * Fetch all subscriptions
+     * Based on data filter the target subscriptions
      * map over the subscriptions and call sendNotification 
      ***/
     Subscription.find({})
-    .then(allSubs => getSubscribers(activity, allSubs))
+    .then(allSubs => getSubscribers(subObj, allSubs))
     .then(pushSubscribers => {
         Promise.all(pushSubscribers
             .map(subObj => {

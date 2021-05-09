@@ -82,8 +82,8 @@ const routes = (app) => {
     /***** NOTIFICATION ROUTES *****/
     app.route('/notifications')
     .post(addPushSubscriber)
-    app.route('/newsletter')
-    .post(sendNewsletter)
+/*     app.route('/newsletter')
+    .post(sendNewsletter) */
 
 }
 
