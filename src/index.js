@@ -25,6 +25,7 @@ admin.initializeApp(); */
 
 // mongoose connection
 import { connect } from 'mongoose';
+// const url = 'mongodb+srv://upenz5791:NDJlN6ekntUrt7n6@cluster0.xloz3.mongodb.net/MEANMDB?retryWrites=true&w=majority';
 const url = 'mongodb+srv://upenz5791:NDJlN6ekntUrt7n6@cluster0.xloz3.mongodb.net/MEANMDB?retryWrites=true&w=majority';
 const connectionParams = {
     useNewUrlParser: true,
